@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"pylypchuk.home/internal/service"
 )
 
@@ -19,22 +20,31 @@ func NewHandler(userService *service.UserWebService, authService *service.AuthWe
 func (h *Handler) InitRouts() *gin.Engine {
 	router := gin.New()
 
-	auth := router.Group("/auth")
+	base := router.Group("/")
 	{
-		auth.POST("/sign-in", h.signIn)
-		auth.POST("/sign-up", h.signUp)
-	}
+		base.GET("/", h.base)
 
-	api := router.Group("/api", h.auth)
-	{
-		users := api.Group("/users")
+		auth := base.Group("/auth")
 		{
-			users.GET("/", h.getAll)
-			users.GET("/:id", h.get)
-			users.PUT("/:id", h.update)
-			users.DELETE("/:id", h.delete)
+			auth.POST("/sign-in", h.signIn)
+			auth.POST("/sign-up", h.signUp)
+		}
+
+		api := router.Group("/api", h.auth)
+		{
+			users := api.Group("/users")
+			{
+				users.GET("/", h.getAll)
+				users.GET("/:id", h.get)
+				users.PUT("/:id", h.update)
+				users.DELETE("/:id", h.delete)
+			}
 		}
 	}
 
 	return router
+}
+
+func (h *Handler) base(c *gin.Context) {
+	c.JSON(http.StatusOK, "Hello Go")
 }

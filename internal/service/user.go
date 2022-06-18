@@ -3,14 +3,17 @@ package service
 import (
 	"pylypchuk.home/internal/dao"
 	"pylypchuk.home/internal/model"
+	"pylypchuk.home/pkg/context"
 )
 
 type UserWebService struct {
 	userRepo dao.UserCrud
 }
 
-func NewUserWebService(userRepo dao.UserCrud) *UserWebService {
-	return &UserWebService{userRepo: userRepo}
+func NewUserWebService() *UserWebService {
+	return &UserWebService{
+		userRepo: context.Get("userRepo").(dao.UserCrud),
+	}
 }
 
 func (us *UserWebService) Get() []model.User {

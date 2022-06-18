@@ -3,16 +3,25 @@ package pkg
 import (
 	"context"
 	"net/http"
+	"pylypchuk.home/internal/api"
+	context2 "pylypchuk.home/pkg/context"
 )
 
 type Server struct {
-	server *http.Server
+	server  *http.Server
+	handler *api.Handler
 }
 
-func (s *Server) Run(port string, handler http.Handler) error {
+func NewServer() *Server {
+	return &Server{
+		handler: context2.Get("handler").(*api.Handler),
+	}
+}
+
+func (s *Server) Run(port string) error {
 	s.server = &http.Server{
 		Addr:    ":" + port,
-		Handler: handler,
+		Handler: s.handler.InitRouts(),
 	}
 
 	return s.server.ListenAndServe()

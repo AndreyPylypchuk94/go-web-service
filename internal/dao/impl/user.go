@@ -3,6 +3,7 @@ package dao
 import (
 	"log"
 	"pylypchuk.home/internal/model"
+	"pylypchuk.home/pkg/context"
 	"pylypchuk.home/pkg/store"
 )
 
@@ -18,8 +19,10 @@ type user struct {
 	dbClient *store.DbClient
 }
 
-func NewUserRepo(client *store.DbClient) *user {
-	return &user{client}
+func NewUserRepo() *user {
+	return &user{
+		dbClient: context.Get("dbClient").(*store.DbClient),
+	}
 }
 
 func (u *user) FindAll() []model.User {

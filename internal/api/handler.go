@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"pylypchuk.home/internal/service"
+	"pylypchuk.home/pkg/context"
 )
 
 type Handler struct {
@@ -11,33 +12,37 @@ type Handler struct {
 	authService *service.AuthWebService
 }
 
-const userCtx = "userCtx"
+const userIdCtx = "userIdCtx"
+const userRolesCtx = "userRolesCtx"
 
-func NewHandler(userService *service.UserWebService, authService *service.AuthWebService) *Handler {
-	return &Handler{userService: userService, authService: authService}
+func NewHandler() *Handler {
+	return &Handler{
+		userService: context.Get("userWebService").(*service.UserWebService),
+		authService: context.Get("authWebService").(*service.AuthWebService),
+	}
 }
 
 func (h *Handler) InitRouts() *gin.Engine {
 	router := gin.New()
 
-	base := router.Group("/")
+	root := router.Group("/")
 	{
-		base.GET("/", h.base)
+		root.GET("/", h.root)
 
-		auth := base.Group("/auth")
+		auth := root.Group("/auth")
 		{
 			auth.POST("/sign-in", h.signIn)
 			auth.POST("/sign-up", h.signUp)
 		}
 
-		api := router.Group("/api", h.auth)
+		api := root.Group("/api", h.auth)
 		{
 			users := api.Group("/users")
 			{
 				users.GET("/", h.getAll)
 				users.GET("/:id", h.get)
-				users.PUT("/:id", h.update)
-				users.DELETE("/:id", h.delete)
+				users.PUT("/:id", h.hasAdminRole, h.update)
+				users.DELETE("/:id", h.hasAdminRole, h.delete)
 			}
 		}
 	}
@@ -45,6 +50,6 @@ func (h *Handler) InitRouts() *gin.Engine {
 	return router
 }
 
-func (h *Handler) base(c *gin.Context) {
+func (h *Handler) root(c *gin.Context) {
 	c.JSON(http.StatusOK, "Hello Go")
 }

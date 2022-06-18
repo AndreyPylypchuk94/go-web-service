@@ -32,7 +32,7 @@ func FailedResponse(c *gin.Context, status int, errorMessage string) {
 }
 
 func FailedStopResponse(c *gin.Context, status int, errorMessage string) {
-	c.AbortWithStatusJSON(status, response{
+	c.JSON(status, response{
 		Data:         nil,
 		Success:      false,
 		ErrorMessage: errorMessage,

@@ -9,8 +9,9 @@ type User struct {
 }
 
 type CreateUser struct {
-	Email     string `json:"email" required:"true"`
-	FirstName string `json:"first_name" db:"first_name"`
-	LastName  string `json:"last_name" db:"last_name"`
-	Password  string `json:"password" required:"true"`
+	Email     string   `json:"email" required:"true"`
+	FirstName string   `json:"first_name" db:"first_name"`
+	LastName  string   `json:"last_name" db:"last_name"`
+	Password  string   `json:"password" required:"true"`
+	Roles     []string `json:"roles" required:"true"`
 }

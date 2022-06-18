@@ -9,6 +9,7 @@ import (
 	dao "pylypchuk.home/internal/dao/impl"
 	"pylypchuk.home/internal/service"
 	"pylypchuk.home/pkg"
+	"pylypchuk.home/pkg/context"
 	"pylypchuk.home/pkg/store"
 )
 
@@ -27,16 +28,20 @@ func main() {
 		Password: os.Getenv("DB_PASSWORD"),
 	}
 
-	dbClient := store.NewDbClient(dbConfig)
-	userRepo := dao.NewUserRepo(dbClient)
-	authService := service.NewAuthWebService(userRepo)
-	userService := service.NewUserWebService(userRepo)
-	handler := api.NewHandler(userService, authService)
+	initContext(dbConfig)
 
-	server := new(pkg.Server)
-	if err := server.Run(viper.GetString("port"), handler.InitRouts()); err != nil {
+	server := pkg.NewServer()
+	if err := server.Run(viper.GetString("port")); err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+func initContext(dbConfig store.DbConfig) {
+	context.Add("dbClient", store.NewDbClient(dbConfig))
+	context.Add("userRepo", dao.NewUserRepo())
+	context.Add("authWebService", service.NewAuthWebService())
+	context.Add("userWebService", service.NewUserWebService())
+	context.Add("handler", api.NewHandler())
 }
 
 func initConfig() error {

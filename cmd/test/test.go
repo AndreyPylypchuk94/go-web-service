@@ -2,25 +2,59 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"reflect"
 )
 
+type ServiceA struct {
+}
+
+func NewServiceA() *ServiceA {
+	return &ServiceA{}
+}
+
+func (a *ServiceA) A() {
+	fmt.Println("a")
+}
+
+type ServiceB struct {
+	a *ServiceA
+}
+
+func NewServiceB() *ServiceB {
+	return &ServiceB{
+		a: Get(&ServiceA{}).(*ServiceA),
+	}
+}
+
+func (b *ServiceB) B() {
+	b.a.A()
+}
+
 func main() {
-	list := []int{1, 2, 3}
+	a := NewServiceA()
+	Add(a)
 
-	list = NewStream(list).
-		Map(func(el int) int { return el * el }).
-		Filter(func(el int) bool { return el >= 5 }).
-		ToSlice()
+	b := NewServiceB()
+	Add(b)
 
-	listS := []string{"1", "2", "3"}
+	b.B()
 
-	listS = NewStream(listS).
-		Map(func(el string) string { return el + el }).
-		Filter(func(el string) bool { return strings.HasPrefix(el, "1") }).
-		ToSlice()
+	fmt.Println(beans)
+}
 
-	fmt.Println(listS)
+var beans = make([]interface{}, 0)
+
+func Add(bean interface{}) {
+	beans = append(beans, bean)
+}
+
+func Get(t interface{}) interface{} {
+	for _, el := range beans {
+		if reflect.TypeOf(el).String() == reflect.TypeOf(t).String() {
+			return el
+		}
+	}
+	panic("not found bean")
 }
 
 type Stream[T any] struct {
